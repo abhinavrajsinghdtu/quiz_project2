@@ -9,9 +9,9 @@
 <body>
     <h1>Quiz</h1>
 
-    <form action="/" method="POST">
+    <form action="/quiz" method="POST">
 
-    <p>Question: {{mcq.question}}</p>
+    <p>Question {{number}}: {{mcq.question}}</p>
 
     <ol type="A">
         <input type="hidden" name="check_answer" value="{{mcq.answer}}">
