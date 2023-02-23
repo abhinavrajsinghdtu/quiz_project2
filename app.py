@@ -123,9 +123,11 @@ def register():
 
 
 # Login
+check_email=""
 @app.route("/" , methods=["GET", "POST"])
 def login():
     print("check")
+    global check_email
     if request.method=="POST":
         print(request.form["email"])
         print(request.form["psw"])
@@ -141,6 +143,7 @@ def login():
             print(user.password)
             if(user.password==request.form["psw"]):
                 print("Login Successfull")
+                check_email = user.email
                 return redirect("/quiz")
             
     
@@ -223,8 +226,10 @@ def delete():
 
 
 result=0
+rowCount=0
 questionDisplayedCount=0
 questionDisplayed=[]
+
 
 @app.route("/quiz",methods=["GET","POST"])
 def quiz():
@@ -235,14 +240,16 @@ def quiz():
     
     global questionDisplayed
     if request.method=="POST":
-        global questionDisplayedCount,result
+        global questionDisplayedCount,result,rowCount
         questionDisplayedCount+=1
         rowCount = db.session.query(MCQ).count()      #no of rows in database
+        print(rowCount)
         answer = request.form["check_answer"]
+        print(answer)
         if answer==request.form["option"]:
-            result+=1 
+            result+=1
         if rowCount==questionDisplayedCount:
-            return render_template("result.html",result=result,rowCount=rowCount)
+            return redirect("/result")
         return redirect("/quiz")
 
     
@@ -254,19 +261,24 @@ def quiz():
     
     if questionDisplayed.__contains__(mcq.question):
         return redirect("/quiz")
-    print(mcq.question)
     questionDisplayed.append(mcq.question)
-    print(mcq.question)
     return render_template("quiz.html",mcq=mcq,number=questionDisplayedCount+1)
 
 
 
 @app.route("/result",methods=["GET","POST"])
-def quiz():
+def results():
 
+    global result,rowCount
     if request.method == "POST":
+        # print(request.form["result"])
+        print(result)
+        user = User.query.filter_by(email=check_email).first()
+        user.result = result
+        db.session.commit()
+        return redirect("/")
         
-    return render_template("result.html")
+    return render_template("result.html",result=result,rowCount=rowCount)
 
 if __name__ == "__main__":
     db.create_all()
